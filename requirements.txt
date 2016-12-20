@@ -1,0 +1,2 @@
+cx-Freeze==5.0
+Django==1.10.4
