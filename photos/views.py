@@ -2,22 +2,23 @@
 
 from __future__ import unicode_literals
 from models import Photo
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.core.paginator import PageNotAnInteger, EmptyPage
 import logging
 
-from django.views.generic import TemplateView
+from django.views.generic import ListView
 
 logger = logging.getLogger(__name__)
 
 PHOTOS_PER_PAGE = 20
 
 
-class MainView(TemplateView):
+class MainView(ListView):
+	queryset = Photo.objects.all()[:100]
+	context_object_name = 'photos'
 	template_name = 'main.html'
 
 	def get_context_data(self, **kwargs):
-		photos_list = Photo.objects.all()[:100]
-		paginator = Paginator(photos_list, PHOTOS_PER_PAGE)
+		paginator = self.get_paginator(self.get_queryset(), PHOTOS_PER_PAGE)
 		page = self.request.GET.get('page')
 
 		try:
