@@ -1,0 +1,24 @@
+/* Paginator */
+.step-links a {
+	font-size: 125%;
+}
+.step-links a:hover {
+	text-decoration: none;
+	color: red;
+}
+.current {
+	padding: 0 0.5em;
+}
+
+/* Container */
+@media (min-width: 768px) {
+	.container {
+	    max-width: 90%;
+	}
+}
+
+@media (min-width: 1200px){
+	.container {
+	    width: 90%;
+	}
+}

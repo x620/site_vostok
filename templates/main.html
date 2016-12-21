@@ -7,6 +7,47 @@
 </div>
 {% endblock %}
 
+{% block content %}
+<table class="table table-striped">
+	<thead>
+	<tr>
+		<th width="5%">#</th>
+		<th width="45%">URL</th>
+		<th width="30%">Tags</th>
+		<th width="5%">Likes</th>
+		<th width="15%">Date</th>
+	</tr>
+	</thead>
+	<tbody>
+		{% for row in photos_table %}
+			<tr>
+				<td scope="row">{{ row.id }}</td>
+				<td><a href="{{ row.url }}">{{ row.url }}</a></td>
+				<td>{% if row.tags %}{{ row.tags }}{% endif %}</td>
+				<td></td>
+				<td>{{ row.created_datetime|date:"d.m.Y H.i.s" }}</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<div class="pagination">
+    <span class="step-links">
+        {% if photos_table.has_previous %}
+            <a href="?page={{ photos_table.previous_page_number }}"><=</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ photos_table.number }} of {{ photos_table.paginator.num_pages }}
+        </span>
+
+        {% if photos_table.has_next %}
+            <a href="?page={{ photos_table.next_page_number }}">=></a>
+        {% endif %}
+    </span>
+</div>
+{% endblock %}
+
 {% block scripts %}
-<script src="{% static 'js/jquery/jquery-3.1.1.min.js' %}"></script>
+	<script src="{% static 'js/jquery/jquery-3.1.1.min.js' %}"></script>
 {% endblock %}
