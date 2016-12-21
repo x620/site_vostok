@@ -14,8 +14,11 @@ class Tag(models.Model):
 class Photo(models.Model):
 	user = models.ForeignKey(User)
 	url = models.CharField('Url', max_length=255, unique=True)
-	created_datetime = models.DateTimeField(auto_now_add=True)
+	created_datetime = models.DateTimeField()
 	tags = models.ManyToManyField(Tag)
+
+	class Meta:
+		ordering = ['-created_datetime']
 
 	def __unicode__(self):
 		return '%s (%s)' % (self.pk, self.user)
