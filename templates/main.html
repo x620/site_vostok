@@ -23,9 +23,15 @@
 			<tr>
 				<td scope="row">{{ row.id }}</td>
 				<td><a href="{{ row.url }}">{{ row.url }}</a></td>
-				<td>{% if row.tags %}{{ row.tags }}{% endif %}</td>
+				<td>
+					{% if row.tags.count %}
+						{% for tag in row.tags.all %}
+							<span class="label label-primary">{{ tag.name }}</span>&nbsp;
+						{% endfor %}
+					{% endif %}
+				</td>
 				<td></td>
-				<td>{{ row.created_datetime|date:"d.m.Y H.i.s" }}</td>
+				<td>{{ row.created_datetime|date:"d.m.Y H:i:s" }}</td>
 			</tr>
 		{% endfor %}
 	</tbody>
