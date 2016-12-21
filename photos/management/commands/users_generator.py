@@ -11,7 +11,7 @@ FILENAME = 'test-photo.csv'
 
 
 class Command(BaseCommand):
-	help = 'Create users to User model from test-photo.csv'
+	help = 'Создание записей для модели User из файла test-photo.csv'
 
 	def handle(self, *args, **options):
 		csv_filename = os.path.join(BASE_DIR, FILENAME)
@@ -25,18 +25,21 @@ class Command(BaseCommand):
 					except:
 						continue
 
-					print(user_id)
+					# print(user_id)
 
-					# TODO: Create users in User model
-					# new_user, created = User.objects.get_or_create(id=user_id, username='u%s' % user_id)
-					# if created:
-					# 	create_count += 1
+					new_user, created = User.objects.get_or_create(id=user_id, username='u%s' % user_id)
+					if created:
+						create_count += 1
+						print('New user: %s' % user_id)
 
-					count += 1
-					if count >= LIMIT:
-						break
+					# count += 1
+					# if count >= LIMIT:
+					# 	break
 
-				self.stdout.write(self.style.SUCCESS('Successfully generate users. Created %s users' % create_count))
+				if create_count:
+					message = 'Successfully generate users. Created %s users' % create_count
+				else:
+					message = 'Such users already exist. So users were not added.'
+				self.stdout.write(self.style.SUCCESS(message))
 		else:
 			self.stdout.write(self.style.SUCCESS('File %s not exists' % csv_filename))
-
