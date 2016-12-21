@@ -10,6 +10,9 @@ class Tag(models.Model):
 	name = models.CharField('Tag name', max_length=25, unique=True)
 	exclude = models.BooleanField('Exclude', default=False)
 
+	def __unicode__(self):
+		return self.name
+
 
 class Photo(models.Model):
 	user = models.ForeignKey(User)
@@ -27,3 +30,6 @@ class Photo(models.Model):
 class Like(models.Model):
 	user = models.ForeignKey(User)
 	photo = models.ForeignKey(Photo)
+
+	def __unicode__(self):
+		return 'Like for %s' % self.photo
