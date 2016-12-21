@@ -3,7 +3,31 @@
 
 {% block jumbotron %}
 <div class="jumbotron">
-	<h2>Photos</h2>
+	<div class="row">
+		<div class="col-md-2">
+			<h2>Photos</h2>
+			<div><a href="#">Выбрать теги исключения</a></div>
+		</div>
+		<div class="col-md-10">
+			{# Выбранные теги #}
+			{% if tags_filter %}
+				{% for tag in tags_filter %}
+					<a href="?{% if page %}page={{ page }}&{% endif %}tag={% for i in tags_filter %}{% if tag.id != i.id %}{{ i.id }}{% if not forloop.last %},{% endif %}{% endif %}{% endfor %}" class="a_label">
+						<span class="label label-default">{{ tag.name }}</span>
+					</a>
+				{% endfor %}
+				<hr color="#000">
+			{% endif %}
+			{# Доступные теги #}
+			{% for tag in tags_remain %}
+				<a href="?{% if page %}page={{ page }}&{% endif %}tag={% for i in tags_filter %}{{ i.id }},{% endfor %}{{ tag.id }}" class="a_label">
+					<span class="label label-primary">
+						{{ tag.name }}
+					</span>
+				</a>
+			{% endfor %}
+		</div>
+	</div>
 </div>
 {% endblock %}
 
@@ -26,7 +50,7 @@
 				<td>
 					{% if row.tags.count %}
 						{% for tag in row.tags.all %}
-							<span class="label label-primary">{{ tag.name }}</span>&nbsp;
+							<span class="label label-primary">{{ tag.name }}</span>
 						{% endfor %}
 					{% endif %}
 				</td>
@@ -39,16 +63,18 @@
 
 <div class="pagination">
     <span class="step-links">
+		{# Стрелка на предыдущую страницу #}
         {% if photos_table.has_previous %}
-            <a href="?page={{ photos_table.previous_page_number }}"><=</a>
+            <a href="?page={{ photos_table.previous_page_number }}{% if tags_filter %}&tag={% for i in tags_filter %}{{ i.id }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}"><=</a>
         {% endif %}
 
         <span class="current">
             Page {{ photos_table.number }} of {{ photos_table.paginator.num_pages }}
         </span>
 
+		{# Стрелка на следующую страницу #}
         {% if photos_table.has_next %}
-            <a href="?page={{ photos_table.next_page_number }}">=></a>
+            <a href="?page={{ photos_table.next_page_number }}{% if tags_filter %}&tag={% for i in tags_filter %}{{ i.id }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}">=></a>
         {% endif %}
     </span>
 </div>
