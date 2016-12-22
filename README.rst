@@ -14,17 +14,20 @@
 
 Сначала нужно загрузить файл auth.json:
 
-.. code::
+::
+
 	python manage.py loaddata photos/fixtures/auth.json
 
 Затем файл photos.json:
 
-.. code::
+::
+
 	python manage.py loaddata photos/fixtures/photos.json
 
 3. Можно сгенерировать новые данные. Для этого нужно запустить команду:
 
-.. code::
+::
+
 	python manage.py data_generator
 
 Так как генерируется большое количество данных, это можно занять некоторое время. Сначала генерируются 100 тегов. Затем
