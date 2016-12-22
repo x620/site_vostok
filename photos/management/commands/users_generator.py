@@ -14,7 +14,7 @@ class Command(BaseCommand):
 	help = 'Создание записей для модели User из файла test-photo.csv'
 
 	def handle(self, *args, **options):
-		csv_filename = os.path.join(BASE_DIR, FILENAME)
+		csv_filename = os.path.join(BASE_DIR, 'static', 'files', 'csv', FILENAME)
 		if os.path.exists(csv_filename):
 			with open(csv_filename, 'rb') as csv_file:
 				create_count = count = 0
