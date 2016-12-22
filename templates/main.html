@@ -6,7 +6,6 @@
 	<div class="row">
 		<div class="col-md-2">
 			<h2>Photos</h2>
-			<div><a href="#">Выбрать теги исключения</a></div>
 		</div>
 		<div class="col-md-10">
 			<form method="get">{% csrf_token %}
@@ -53,8 +52,8 @@
 		<th width="5%">#</th>
 		<th width="45%">URL</th>
 		<th width="30%">Tags</th>
-		<th width="5%">Likes</th>
-		<th width="15%">Date</th>
+		<th width="5%"><a href="?sorting=likes">Likes</a></th>
+		<th width="15%"><a href="?sorting=date">Date</a></th>
 	</tr>
 	</thead>
 	<tbody>
@@ -71,7 +70,7 @@
 						</small>
 					{% endif %}
 				</td>
-				<td></td>
+				<td>{{ row.likes.count }}</td>
 				<td>{{ row.created_datetime|date:"d.m.Y H:i:s" }}</td>
 			</tr>
 		{% endfor %}
@@ -82,7 +81,7 @@
     <span class="step-links">
 		{# Стрелка на предыдущую страницу #}
         {% if photos_table.has_previous %}
-            <a href="/page-{{ photos_table.previous_page_number }}/{% if tags_filter %}?tag={% for i in tags_filter %}{{ i.id }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}"><=</a>
+            <a href="/page-{{ photos_table.previous_page_number }}/"><=</a>
         {% endif %}
 
         <span class="current">
@@ -91,7 +90,7 @@
 
 		{# Стрелка на следующую страницу #}
         {% if photos_table.has_next %}
-            <a href="/page-{{ photos_table.next_page_number }}/{% if tags_filter %}?tag={% for i in tags_filter %}{{ i.id }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}">=></a>
+            <a href="/page-{{ photos_table.next_page_number }}/">=></a>
         {% endif %}
     </span>
 </div>

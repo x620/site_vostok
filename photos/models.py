@@ -19,17 +19,10 @@ class Photo(models.Model):
 	url = models.CharField('Url', max_length=255, unique=True)
 	created_datetime = models.DateTimeField()
 	tags = models.ManyToManyField(Tag)
+	likes = models.ManyToManyField(User, related_name='Likes')
 
 	class Meta:
 		ordering = ['-created_datetime']
 
 	def __unicode__(self):
 		return '%s (%s)' % (self.pk, self.user)
-
-
-class Like(models.Model):
-	user = models.ForeignKey(User)
-	photo = models.ForeignKey(Photo)
-
-	def __unicode__(self):
-		return 'Like for %s' % self.photo

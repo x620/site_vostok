@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.contrib import admin
-from .models import Photo, Tag, Like
+from .models import Photo, Tag
 
 
 @admin.register(Photo)
@@ -15,8 +15,3 @@ class TagAdmin(admin.ModelAdmin):
 	search_fields = ('name',)
 	list_filter = ('exclude',)
 	list_editable = ('exclude',)
-
-
-@admin.register(Like)
-class LikeAdmin(admin.ModelAdmin):
-	list_display = ('user', 'photo')
