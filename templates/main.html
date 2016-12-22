@@ -9,23 +9,38 @@
 			<div><a href="#">Выбрать теги исключения</a></div>
 		</div>
 		<div class="col-md-10">
-			{# Выбранные теги #}
-			{% if tags_filter %}
-				{% for tag in tags_filter %}
-					<a href="?{% if page %}page={{ page }}&{% endif %}tag={% for i in tags_filter %}{% if tag.id != i.id %}{{ i.id }}{% if not forloop.last %},{% endif %}{% endif %}{% endfor %}" class="a_label">
-						<span class="label label-default">{{ tag.name }}</span>
-					</a>
+			<form method="get">{% csrf_token %}
+				<div>
+					<label><input type="radio" name="action_type" value="filter" checked/> Тег для фильтрации</label>
+					<label><input type="radio" name="action_type" value="exclude"/> Тег для исключения</label>
+				</div>
+				{# Выбранные теги #}
+				<div class="row">
+					<div class="col-md-6">
+						{% if tags_filter %}
+							{% for tag in tags_filter %}
+								<button class="btn btn-default btn-xs" name="un_tag" value="{{ tag.id }}">
+									{{ tag.name }}
+								</button>
+							{% endfor %}
+						{% endif %}
+					</div>
+					<div class="col-md-6">
+						{% if tags_exclude %}
+							{% for tag in tags_exclude %}
+								<button class="btn btn-warning btn-xs" name="un_tag" value="{{ tag.id }}">
+									{{ tag.name }}
+								</button>
+							{% endfor %}
+						{% endif %}
+					</div>
+				</div>
+				<hr>
+				{# Доступные теги #}
+				{% for tag in tags_remain %}
+					<button class="btn btn-primary btn-xs" name="tag" value="{{ tag.id }}">{{ tag.name }}</button>
 				{% endfor %}
-				<hr color="#000">
-			{% endif %}
-			{# Доступные теги #}
-			{% for tag in tags_remain %}
-				<a href="?{% if page %}page={{ page }}&{% endif %}tag={% for i in tags_filter %}{{ i.id }},{% endfor %}{{ tag.id }}" class="a_label">
-					<span class="label label-primary">
-						{{ tag.name }}
-					</span>
-				</a>
-			{% endfor %}
+			</form>
 		</div>
 	</div>
 </div>
@@ -49,9 +64,11 @@
 				<td><a href="{{ row.url }}">{{ row.url }}</a></td>
 				<td>
 					{% if row.tags.count %}
+						<small>
 						{% for tag in row.tags.all %}
-							<span class="label label-primary">{{ tag.name }}</span>
+							{{ tag.name }}{% if not forloop.last %},{% endif %}
 						{% endfor %}
+						</small>
 					{% endif %}
 				</td>
 				<td></td>
@@ -65,7 +82,7 @@
     <span class="step-links">
 		{# Стрелка на предыдущую страницу #}
         {% if photos_table.has_previous %}
-            <a href="?page={{ photos_table.previous_page_number }}{% if tags_filter %}&tag={% for i in tags_filter %}{{ i.id }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}"><=</a>
+            <a href="/page-{{ photos_table.previous_page_number }}/{% if tags_filter %}?tag={% for i in tags_filter %}{{ i.id }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}"><=</a>
         {% endif %}
 
         <span class="current">
@@ -74,7 +91,7 @@
 
 		{# Стрелка на следующую страницу #}
         {% if photos_table.has_next %}
-            <a href="?page={{ photos_table.next_page_number }}{% if tags_filter %}&tag={% for i in tags_filter %}{{ i.id }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}">=></a>
+            <a href="/page-{{ photos_table.next_page_number }}/{% if tags_filter %}?tag={% for i in tags_filter %}{{ i.id }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}">=></a>
         {% endif %}
     </span>
 </div>

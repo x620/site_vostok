@@ -17,31 +17,52 @@ def get_tags(exclude=False):
 
 
 class MainView(ListView):
-	queryset = Photo.objects.all()
+	model = Photo
 	context_object_name = 'photos'
 	template_name = 'main.html'
 
 	def __init__(self, **kwargs):
 		super(MainView, self).__init__(**kwargs)
-		self.tag_filter = []
+		# Создаем пустой шаблон
+		self.session = {'filter_tags': [], 'exclude_tags': []}
 
 	def get(self, request, *args, **kwargs):
-		if request.GET.get('tag'):
+		action = request.GET.get('action_type')
+		# Получаем из GET id по тегу filter или exclude
+		if action:
+			tag_type = '%s_tags' % action
+			# Добавление id тега в сессию
+			tag_id = request.GET.get('tag')
 			try:
-				s = request.GET.get('tag').split(',')
-				for i in s:
-					try:
-						self.tag_filter.append(int(i))
-					except:
-						pass
-			except:
-				pass
+				if tag_id is not None:
+					tag_id = int(tag_id)
+					if tag_id not in self.request.session[tag_type]:
+						if action == 'exclude' and len(self.request.session[tag_type]) >= 3:
+							# TODO: Обработка события, когда добавляется слищком много тегов-исключений
+							print('Нельзя добавлять больше 3 тегов-исключений')
+						else:
+							self.request.session[tag_type] += [tag_id]
+			except ValueError:
+				logger.error('%s tags id "%s" is not integer' % (action.upper(), tag_id))
+
+		# Удаление id тега из сессии
+		un_tag_id = request.GET.get('un_tag')
+		try:
+			if un_tag_id is not None:
+				un_tag_id = int(un_tag_id)
+				for tag_type in ('filter_tags', 'exclude_tags'):
+					if un_tag_id in self.request.session[tag_type]:
+						self.request.session[tag_type] = [i for i in self.request.session[tag_type] if i != un_tag_id]
+		except ValueError:
+			logger.error('Tags id "%s" is not integer' % un_tag_id)
+
 		return super(MainView, self).get(request, *args, **kwargs)
 
-	def tags_filter(self):
+	def tags_filter(self, action='filter'):
 		# Собираем выбранные теги
 		tags_filter = []
-		for tag_id in self.tag_filter:
+		action_type = '%s_tags' % action
+		for tag_id in self.request.session[action_type]:
 			try:
 				tags_filter.append(Tag.objects.get(pk=tag_id))
 			except:
@@ -53,18 +74,31 @@ class MainView(ListView):
 		tags = get_tags()
 		for tag_filter in self.tags_filter():
 			tags = tags.exclude(id=tag_filter.id)
+		for tag_filter in self.tags_filter('exclude'):
+			tags = tags.exclude(id=tag_filter.id)
 		return tags
 
 	def get_queryset(self):
 		# Выбираем только те фотки, которые удовлетворяют выбранным тегам (если они выбраны)
-		if self.tag_filter:
-			for tf in self.tag_filter:
-				self.queryset = self.queryset.filter(tags__id=tf)
-		return self.queryset
+		queryset = super(MainView, self).get_queryset()
+		filter_tags = self.request.session['filter_tags']
+		if filter_tags:
+			# Создаем пустой queryset
+			qs = Tag.objects.none()
+			for tf in filter_tags:
+				# Выбираем теги соответствующие очередному тегу и добавляем в qs
+				qs |= queryset.filter(tags__id=tf)
+			queryset = qs
+		exclude_tags = self.request.session['exclude_tags']
+		if exclude_tags:
+			for te in exclude_tags:
+				# Выбираем теги соответствующие очередному тегу и исзключаем из queryset
+				queryset = queryset.exclude(tags__id=te)
+		return queryset
 
 	def get_context_data(self, **kwargs):
 		paginator = self.get_paginator(self.get_queryset(), PHOTOS_PER_PAGE)
-		page = self.request.GET.get('page')
+		page = self.kwargs.get('page', 1)
 
 		try:
 			photos_table = paginator.page(page)
@@ -77,6 +111,7 @@ class MainView(ListView):
 		context['main'] = True
 		context['photos_table'] = photos_table
 		context['tags_filter'] = self.tags_filter()
+		context['tags_exclude'] = self.tags_filter('exclude')
 		context['tags_remain'] = self.tags_remain()
 		context['page'] = page
 		return context
