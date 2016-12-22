@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Хост: 127.0.0.1
--- Время создания: Дек 22 2016 г., 10:30
+-- Время создания: Дек 22 2016 г., 19:41
 -- Версия сервера: 5.5.25
 -- Версия PHP: 5.3.13
 
@@ -165,7 +165,7 @@ CREATE TABLE IF NOT EXISTS `django_migrations` (
   `name` varchar(255) NOT NULL,
   `applied` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=16 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=18 ;
 
 -- --------------------------------------------------------
 
@@ -184,21 +184,6 @@ CREATE TABLE IF NOT EXISTS `django_session` (
 -- --------------------------------------------------------
 
 --
--- Структура таблицы `photos_like`
---
-
-CREATE TABLE IF NOT EXISTS `photos_like` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `photo_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `photos_like_photo_id_56eb526d_fk_photos_photo_id` (`photo_id`),
-  KEY `photos_like_user_id_a82c93a9_fk_auth_user_id` (`user_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=486675 ;
-
--- --------------------------------------------------------
-
---
 -- Структура таблицы `photos_photo`
 --
 
@@ -211,6 +196,21 @@ CREATE TABLE IF NOT EXISTS `photos_photo` (
   UNIQUE KEY `url` (`url`),
   KEY `photos_photo_user_id_2c88c04a_fk_auth_user_id` (`user_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=97346 ;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `photos_photo_likes`
+--
+
+CREATE TABLE IF NOT EXISTS `photos_photo_likes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `photo_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `photos_like_photo_id_56eb526d_fk_photos_photo_id` (`photo_id`),
+  KEY `photos_like_user_id_a82c93a9_fk_auth_user_id` (`user_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=486675 ;
 
 -- --------------------------------------------------------
 
@@ -280,13 +280,6 @@ ALTER TABLE `django_admin_log`
   ADD CONSTRAINT `django_admin__content_type_id_c4bce8eb_fk_django_content_type_id` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`);
 
 --
--- Ограничения внешнего ключа таблицы `photos_like`
---
-ALTER TABLE `photos_like`
-  ADD CONSTRAINT `photos_like_photo_id_56eb526d_fk_photos_photo_id` FOREIGN KEY (`photo_id`) REFERENCES `photos_photo` (`id`),
-  ADD CONSTRAINT `photos_like_user_id_a82c93a9_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
-
---
 -- Ограничения внешнего ключа таблицы `photos_photo`
 --
 ALTER TABLE `photos_photo`
@@ -296,8 +289,8 @@ ALTER TABLE `photos_photo`
 -- Ограничения внешнего ключа таблицы `photos_photo_tags`
 --
 ALTER TABLE `photos_photo_tags`
-  ADD CONSTRAINT `photos_photo_tags_tag_id_c791aafb_fk_photos_tag_id` FOREIGN KEY (`tag_id`) REFERENCES `photos_tag` (`id`),
-  ADD CONSTRAINT `photos_photo_tags_photo_id_c660ea52_fk_photos_photo_id` FOREIGN KEY (`photo_id`) REFERENCES `photos_photo` (`id`);
+  ADD CONSTRAINT `photos_photo_tags_photo_id_c660ea52_fk_photos_photo_id` FOREIGN KEY (`photo_id`) REFERENCES `photos_photo` (`id`),
+  ADD CONSTRAINT `photos_photo_tags_tag_id_c791aafb_fk_photos_tag_id` FOREIGN KEY (`tag_id`) REFERENCES `photos_tag` (`id`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
