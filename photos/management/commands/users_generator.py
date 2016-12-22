@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from site_vostok.settings import BASE_DIR
 
-LIMIT = 10
+LIMIT = 100
 FILENAME = 'test-photo.csv'
 
 
@@ -30,7 +30,7 @@ class Command(BaseCommand):
 					new_user, created = User.objects.get_or_create(id=user_id, username='u%s' % user_id)
 					if created:
 						create_count += 1
-						print('New user: %s' % user_id)
+						print('%s. New user: %s' % (create_count, user_id))
 
 					# count += 1
 					# if count >= LIMIT:
