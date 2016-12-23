@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
+from django.urls import reverse
+
 from models import Photo, Tag
 from django.core.paginator import PageNotAnInteger, EmptyPage
 from django.db.models import Count
@@ -60,6 +65,7 @@ class MainView(ListView):
 				for tag_type in actions:
 					if un_tag_id in self.request.session.get(tag_type, []):
 						self.request.session[tag_type] = [i for i in self.request.session.get(tag_type, []) if i != un_tag_id]
+						return HttpResponseRedirect(reverse('index'))
 		except ValueError:
 			logger.error('Tags id "%s" is not integer' % un_tag_id)
 
@@ -115,12 +121,10 @@ class MainView(ListView):
 			for te in exclude_tags:
 				# Выбираем теги соответствующие очередному тегу и исключаем из queryset
 				queryset = queryset.exclude(tags__id=te)
-		return queryset
+		self.queryset = queryset
+		return self.queryset
 
-	def get_context_data(self, **kwargs):
-		# Задаем для таблицы сохраненный вариант сортировки
-		self.ordering = self.request.session.get('ordering', '-created_datetime')
-
+	def get_photos_table(self):
 		# Пейджинг
 		paginator = self.get_paginator(self.get_queryset(), PHOTOS_PER_PAGE)
 		page = self.kwargs.get('page', 1)
@@ -130,10 +134,15 @@ class MainView(ListView):
 			photos_table = paginator.page(1)
 		except EmptyPage:
 			photos_table = paginator.page(paginator.num_pages)
+		return photos_table
+
+	def get_context_data(self, **kwargs):
+		# Задаем для таблицы сохраненный вариант сортировки
+		self.ordering = self.request.session.get('ordering', '-created_datetime')
 
 		context = super(MainView, self).get_context_data(**kwargs)
 		context['main'] = True
-		context['photos_table'] = photos_table
+		context['photos_table'] = self.get_photos_table()
 		context['tags_filter'] = self.tags_filter()
 		context['tags_exclude'] = self.tags_filter('exclude')
 		context['tags_remain'] = self.tags_remain()
