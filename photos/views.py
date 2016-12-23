@@ -65,7 +65,7 @@ class MainView(ListView):
 				for tag_type in actions:
 					if un_tag_id in self.request.session.get(tag_type, []):
 						self.request.session[tag_type] = [i for i in self.request.session.get(tag_type, []) if i != un_tag_id]
-						# return HttpResponseRedirect(reverse('index'))
+						return HttpResponseRedirect(reverse('index'))
 		except ValueError:
 			logger.error('Tags id "%s" is not integer' % un_tag_id)
 
