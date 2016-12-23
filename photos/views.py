@@ -24,10 +24,13 @@ class MainView(ListView):
 
 	def __init__(self, **kwargs):
 		super(MainView, self).__init__(**kwargs)
-		# Создаем пустой шаблон
-		self.session = {'filter_tags': [], 'exclude_tags': []}
 
 	def get(self, request, *args, **kwargs):
+		actions = 'filter_tags', 'exclude_tags'
+		for tag_type in actions:
+			if tag_type not in self.request.session:
+				self.request.session[tag_type] = []
+
 		# Нужно для сортировки по количеству лайков
 		self.queryset = self.get_queryset().annotate(likes_count=Count('likes'))
 
@@ -40,8 +43,8 @@ class MainView(ListView):
 			try:
 				if tag_id is not None:
 					tag_id = int(tag_id)
-					if tag_id not in self.request.session[tag_type]:
-						if action == 'exclude' and len(self.request.session[tag_type]) >= 3:
+					if tag_id not in self.request.session.get(tag_type, []):
+						if action == 'exclude' and len(self.request.session.get(tag_type)) >= 3:
 							# TODO: Обработка события, когда добавляется слищком много тегов-исключений
 							print('Нельзя добавлять больше 3 тегов-исключений')
 						else:
@@ -54,9 +57,9 @@ class MainView(ListView):
 		try:
 			if un_tag_id is not None:
 				un_tag_id = int(un_tag_id)
-				for tag_type in ('filter_tags', 'exclude_tags'):
-					if un_tag_id in self.request.session[tag_type]:
-						self.request.session[tag_type] = [i for i in self.request.session[tag_type] if i != un_tag_id]
+				for tag_type in actions:
+					if un_tag_id in self.request.session.get(tag_type, []):
+						self.request.session[tag_type] = [i for i in self.request.session.get(tag_type, []) if i != un_tag_id]
 		except ValueError:
 			logger.error('Tags id "%s" is not integer' % un_tag_id)
 
@@ -80,7 +83,7 @@ class MainView(ListView):
 		# Собираем выбранные теги
 		tags_filter = []
 		action_type = '%s_tags' % action
-		for tag_id in self.request.session[action_type]:
+		for tag_id in self.request.session.get(action_type, []):
 			try:
 				tags_filter.append(Tag.objects.get(pk=tag_id))
 			except:
@@ -99,7 +102,7 @@ class MainView(ListView):
 	def get_queryset(self):
 		# Выбираем только те фотки, которые удовлетворяют выбранным тегам (если они выбраны)
 		queryset = super(MainView, self).get_queryset()
-		filter_tags = self.request.session['filter_tags']
+		filter_tags = self.request.session.get('filter_tags', [])
 		if filter_tags:
 			# Создаем пустой queryset
 			qs = Tag.objects.none()
@@ -107,7 +110,7 @@ class MainView(ListView):
 				# Выбираем теги соответствующие очередному тегу и добавляем в qs
 				qs |= queryset.filter(tags__id=tf)
 			queryset = qs
-		exclude_tags = self.request.session['exclude_tags']
+		exclude_tags = self.request.session.get('exclude_tags', [])
 		if exclude_tags:
 			for te in exclude_tags:
 				# Выбираем теги соответствующие очередному тегу и исключаем из queryset
