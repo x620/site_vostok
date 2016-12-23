@@ -110,20 +110,11 @@ class MainView(ListView):
 		queryset = super(MainView, self).get_queryset()
 		filter_tags = self.request.session.get('filter_tags', [])
 		if filter_tags:
-			# Создаем пустой queryset
-			qs = Tag.objects.none()
-			for tf in filter_tags:
-				try:
-					# Выбираем теги соответствующие очередному тегу и добавляем в qs
-					qs |= queryset.filter(tags__id=tf)
-				except:
-					pass
-			queryset = qs
+			# Выбираем теги соответствующие тегам
+			queryset = queryset.filter(tags__id__in=filter_tags)
 		exclude_tags = self.request.session.get('exclude_tags', [])
 		if exclude_tags:
-			for te in exclude_tags:
-				# Выбираем теги соответствующие очередному тегу и исключаем из queryset
-				queryset = queryset.exclude(tags__id=te)
+			queryset = queryset.exclude(tags__id__in=exclude_tags)
 		self.queryset = queryset
 		return queryset
 
