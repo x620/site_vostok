@@ -124,6 +124,7 @@ class MainView(ListView):
 			for te in exclude_tags:
 				# Выбираем теги соответствующие очередному тегу и исключаем из queryset
 				queryset = queryset.exclude(tags__id=te)
+		self.queryset = queryset
 		return queryset
 
 	def get_photos_table(self):
@@ -142,19 +143,9 @@ class MainView(ListView):
 		# Задаем для таблицы сохраненный вариант сортировки
 		self.ordering = self.request.session.get('ordering', '-created_datetime')
 
-		# Пейджинг
-		paginator = self.get_paginator(self.get_queryset(), PHOTOS_PER_PAGE)
-		page = self.kwargs.get('page', 1)
-		try:
-			photos_table = paginator.page(page)
-		except PageNotAnInteger:
-			photos_table = paginator.page(1)
-		except EmptyPage:
-			photos_table = paginator.page(paginator.num_pages)
-
 		context = super(MainView, self).get_context_data(**kwargs)
 		context['main'] = True
-		context['photos_table'] = photos_table
+		context['photos_table'] = self.get_photos_table()
 		context['tags_filter'] = self.tags_filter()
 		context['tags_exclude'] = self.tags_filter('exclude')
 		context['tags_remain'] = self.tags_remain()
