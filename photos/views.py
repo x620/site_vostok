@@ -37,7 +37,7 @@ class MainView(ListView):
 				self.request.session[tag_type] = []
 
 		# Нужно для сортировки по количеству лайков
-		self.queryset = self.get_queryset().annotate(likes_count=Count('likes'))
+		self.queryset = self.get_queryset().annotate(likes_count=Count('likes', distinct=True))
 
 		action = request.GET.get('action_type')
 		# Получаем из GET id по тегу filter или exclude
