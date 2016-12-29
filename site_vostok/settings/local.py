@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from .pswd import LOCAL_DB_NAME, LOCAL_DB_USER, LOCAL_DB_PASS
+import os
+from site_vostok.settings import BASE_DIR
 
 DEBUG = True
 ALLOWED_HOSTS = ['*']
@@ -9,14 +10,9 @@ ALLOWED_HOSTS = ['*']
 # Database
 ################################################################################
 DATABASES = {
-	'default': {
-		'ENGINE': 'django.db.backends.mysql',
-		'NAME': LOCAL_DB_NAME,
-		'USER': LOCAL_DB_USER,
-		'PASSWORD': LOCAL_DB_PASS,
-		'HOST': '127.0.0.1',
-		'PORT': '3306'
-	}
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
 }
-
 ################################################################################
