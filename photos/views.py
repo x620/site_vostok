@@ -3,19 +3,18 @@
 from __future__ import unicode_literals
 
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
 from django.urls import reverse
-
-from models import Photo, Tag
-from django.core.paginator import PageNotAnInteger, EmptyPage
+from django.views.generic import ListView
 from django.db.models import Count
+from models import Photo, Tag
+
 import logging
 
-from django.views.generic import ListView
 
 logger = logging.getLogger(__name__)
 
 PHOTOS_PER_PAGE = 20
+ACTIONS = 'filter_tags', 'exclude_tags'
 
 
 def get_tags(exclude=False):
@@ -26,13 +25,10 @@ class MainView(ListView):
 	model = Photo
 	context_object_name = 'photos'
 	template_name = 'main.html'
-
-	def __init__(self, **kwargs):
-		super(MainView, self).__init__(**kwargs)
+	paginate_by = PHOTOS_PER_PAGE
 
 	def get(self, request, *args, **kwargs):
-		actions = 'filter_tags', 'exclude_tags'
-		for tag_type in actions:
+		for tag_type in ACTIONS:
 			if tag_type not in self.request.session:
 				self.request.session[tag_type] = []
 
@@ -62,7 +58,7 @@ class MainView(ListView):
 		try:
 			if un_tag_id is not None:
 				un_tag_id = int(un_tag_id)
-				for tag_type in actions:
+				for tag_type in ACTIONS:
 					if un_tag_id in self.request.session.get(tag_type, []):
 						self.request.session[tag_type] = [i for i in self.request.session.get(tag_type, []) if i != un_tag_id]
 						return HttpResponseRedirect(reverse('index'))
@@ -83,60 +79,41 @@ class MainView(ListView):
 			# Выбираем вариант сортировки
 			self.request.session['ordering'] = v[1] if ordering == v[0] else v[0]
 
+		# Задаем для таблицы сохраненный вариант сортировки
+		self.ordering = self.request.session.get('ordering', 'created_datetime')
+
 		return super(MainView, self).get(request, *args, **kwargs)
 
 	def tags_filter(self, action='filter'):
-		# Собираем выбранные теги
-		tags_filter = []
+		"""Собираем выбранные теги"""
 		action_type = '%s_tags' % action
-		for tag_id in self.request.session.get(action_type, []):
-			try:
-				tags_filter.append(Tag.objects.get(pk=tag_id))
-			except:
-				pass
-		return tags_filter
+		return Tag.objects.filter(id__in=self.request.session.get(action_type, []))
 
 	def tags_remain(self):
-		# Собираем доступные для выбора теги
+		"""Собираем доступные для выбора теги. То есть исключаем те, которые уже были выбраны"""
 		tags = get_tags()
-		for tag_filter in self.tags_filter():
-			tags = tags.exclude(id=tag_filter.id)
-		for tag_filter in self.tags_filter('exclude'):
-			tags = tags.exclude(id=tag_filter.id)
+		for action_type in ACTIONS:
+			tags = tags.exclude(id__in=self.request.session.get(action_type, []))
 		return tags
 
 	def get_queryset(self):
-		# Выбираем только те фотки, которые удовлетворяют выбранным тегам (если они выбраны)
+		"""Выбираем только те фотки, которые удовлетворяют выбранным тегам (если они выбраны)"""
+
 		queryset = super(MainView, self).get_queryset()
+
 		filter_tags = self.request.session.get('filter_tags', [])
 		if filter_tags:
-			# Выбираем теги соответствующие тегам
 			queryset = queryset.filter(tags__id__in=filter_tags)
+
 		exclude_tags = self.request.session.get('exclude_tags', [])
 		if exclude_tags:
 			queryset = queryset.exclude(tags__id__in=exclude_tags)
-		self.queryset = queryset
+
 		return queryset
 
-	def get_photos_table(self):
-		# Пейджинг
-		paginator = self.get_paginator(self.get_queryset(), PHOTOS_PER_PAGE)
-		page = self.kwargs.get('page', 1)
-		try:
-			photos_table = paginator.page(page)
-		except PageNotAnInteger:
-			photos_table = paginator.page(1)
-		except EmptyPage:
-			photos_table = paginator.page(paginator.num_pages)
-		return photos_table
-
 	def get_context_data(self, **kwargs):
-		# Задаем для таблицы сохраненный вариант сортировки
-		self.ordering = self.request.session.get('ordering', '-created_datetime')
-
 		context = super(MainView, self).get_context_data(**kwargs)
 		context['main'] = True
-		context['photos_table'] = self.get_photos_table()
 		context['tags_filter'] = self.tags_filter()
 		context['tags_exclude'] = self.tags_filter('exclude')
 		context['tags_remain'] = self.tags_remain()

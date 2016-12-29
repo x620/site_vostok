@@ -57,7 +57,7 @@
 	</tr>
 	</thead>
 	<tbody>
-		{% for row in photos_table %}
+		{% for row in page_obj %}
 			<tr>
 				<td scope="row">{{ row.id }}</td>
 				<td><a href="{{ row.url }}">{{ row.url }}</a></td>
@@ -77,23 +77,26 @@
 	</tbody>
 </table>
 
+{% if is_paginated %}
 <div class="pagination">
     <span class="step-links">
 		{# Стрелка на предыдущую страницу #}
-        {% if photos_table.has_previous %}
-            <a href="/page-{{ photos_table.previous_page_number }}/"><=</a>
+        {% if page_obj.has_previous %}
+            <a href="/page-{{ page_obj.previous_page_number }}/"><=</a>
         {% endif %}
 
         <span class="current">
-            Page {{ photos_table.number }} of {{ photos_table.paginator.num_pages }}
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
         </span>
 
 		{# Стрелка на следующую страницу #}
-        {% if photos_table.has_next %}
-            <a href="/page-{{ photos_table.next_page_number }}/">=></a>
+        {% if page_obj.has_next %}
+            <a href="/page-{{ page_obj.next_page_number }}/">=></a>
         {% endif %}
     </span>
 </div>
+{% endif %}
+
 {% endblock %}
 
 {% block scripts %}
