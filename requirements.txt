@@ -1,3 +1,4 @@
 cx-Freeze==5.0
 Django==1.10.4
 mysql-python==1.2.5
+django-debug-toolbar==1.6
